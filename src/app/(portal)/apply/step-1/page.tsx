@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 
 // 1. Define the strictly typed interface for form fields
-interface PersonalInfoInputs {
+export interface PersonalInfoInputs {
   fullName: string;
   gender: string;
   email: string;
@@ -29,9 +29,10 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
   const { updatePersonalInfo } = useFormContext();
   const router = useRouter();
   
-  // State for the image preview (Base64 string)
+  // State for the image preview (will be the URL returned from backend)
   const [preview, setPreview] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // 2. Load saved data on mount
   useEffect(() => {
@@ -47,48 +48,84 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
     }
   }, [savedData, setValue]);
 
-  // 3. Handle Image Selection with Next.js Optimization logic
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // 3. Handle Image Selection & Backend Upload
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate File Size (e.g., max 1MB for passports)
+    // Validate File Size (max 1MB)
     if (file.size > 1024 * 1024) {
       toast.error("Passport size must be less than 1MB");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setPreview(result);
+    setIsUploading(true);
+    const uploadToastId = toast.loading("Uploading passport to server...");
+
+    try {
+      // Create FormData to send the file
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Call the API route we created
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      
+      // The API returns the path: /uploads/passports/filename.jpg
+      setPreview(data.url);
       
       // Sync the file with react-hook-form
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(file);
       setValue('passport', dataTransfer.files);
-    };
-    reader.readAsDataURL(file);
+
+      toast.update(uploadToastId, { 
+        render: "Passport uploaded!", 
+        type: "success", 
+        isLoading: false, 
+        autoClose: 2000 
+      });
+    } catch (error) {
+      toast.update(uploadToastId, { 
+        render: "Failed to upload image.", 
+        type: "error", 
+        isLoading: false, 
+        autoClose: 3000 
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const onSubmit = async (data: PersonalInfoInputs) => {
+    if (isUploading) return toast.warn("Please wait for upload to complete.");
+    
     setIsSaving(true);
     try {
-      // Update Context
+      // Update Context with the URL path returned from the server
       updatePersonalInfo({
         ...data,
         passportFile: data.passport?.[0],
         passportPreview: preview || undefined,
       });
 
-      // Save to Backend
+      // Save to Backend Draft Store
       const response = await fetch('/api/form/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ step: 1, data: { ...data, passportPreview: preview } }),
+        body: JSON.stringify({ 
+          step: 1, 
+          data: { ...data, passportPreview: preview } 
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to save");
+      if (!response.ok) throw new Error("Failed to save progress");
 
       toast.success("Personal info saved!");
       router.push('/apply/step-2-health-info');
@@ -102,7 +139,6 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Input Fields */}
         <div className="flex flex-col">
           <label className="text-sm font-semibold mb-1">Full Name</label>
           <input className="border p-3 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" {...register('fullName')} placeholder="Surname First" required />
@@ -154,8 +190,9 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
             type="file"
             accept="image/*"
             onChange={handleImageChange}
+            disabled={isUploading}
             required={!preview}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer disabled:opacity-50"
           />
 
           {preview && (
@@ -165,7 +202,7 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
                 alt="Passport Preview" 
                 fill
                 className="object-cover"
-                unoptimized // Since it is a base64 string
+                unoptimized
               />
             </div>
           )}
@@ -174,10 +211,10 @@ export default function Step1PersonalInfo({ savedData }: Step1Props) {
 
       <button 
         type="submit" 
-        disabled={isSaving}
+        disabled={isSaving || isUploading}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg transition-all shadow-lg active:transform active:scale-[0.98] disabled:bg-gray-400"
       >
-        {isSaving ? 'Processing...' : 'Save & Continue to Health Info'}
+        {isSaving ? 'Processing...' : isUploading ? 'Uploading Image...' : 'Save & Continue to Health Info'}
       </button>
     </form>
   );
