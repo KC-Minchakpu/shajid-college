@@ -17,15 +17,20 @@ const UserSchema = new Schema({
   },
   role: { 
     type: String, 
-    default: 'applicant' 
+    default: 'applicant',
+    enum: ['applicant', 'admin', 'registrar']
   },
-  
   status: { 
     type: String, 
     default: 'pending',
     enum: ['pending', 'submitted', 'admitted', 'rejected'],
     required: true
   },
+  // Keeps track of application fee payment
+  paymentVerified: {
+    type: Boolean,
+    default: false
+  }
 }, { timestamps: true });
 
 // This prevents Mongoose from creating the model twice during hot reloads

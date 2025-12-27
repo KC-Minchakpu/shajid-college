@@ -2,78 +2,104 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { 
-  ClipboardDocumentCheckIcon, 
-  AcademicCapIcon, 
-  CreditCardIcon, 
-  UserCircleIcon 
-} from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import styles from './dashboard.module.css';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
-  if (status === 'loading') return <div className={styles.loading}>Loading Portal...</div>;
+  // Protect the route: if unauthenticated, redirect to sign-in
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/sign-in');
+    }
+  }, [status, router]);
 
-  // Mock status - In a real app, this comes from session.user.status
-  const applicationStatus = session?.user?.status || 'pending'; 
+  if (status === 'loading') {
+    return <div className={styles.loadingContainer}>Loading Portal...</div>;
+  }
+
+  const userStatus = session?.user?.role || 'pending';
 
   return (
     <div className={styles.dashboardWrapper}>
-      <header className={styles.header}>
-        <h1>Welcome, {session?.user?.name}</h1>
-        <p>Student ID: {session?.user?.email}</p>
-      </header>
+      {/* Top Navigation Bar */}
+      <nav className={styles.navbar}>
+        <div className={styles.navLogo}>
+          <Image src="/shajid-logo.png" alt="Logo" width={50} height={50} />
+          <span>Shajid College Portal</span>
+        </div>
+        <div className={styles.userInfo}>
+          <span>{session?.user?.name}</span>
+          <div className={styles.statusBadge}>{userStatus.toUpperCase()}</div>
+        </div>
+      </nav>
 
-      <div className={styles.grid}>
-        {/* SECTION 1: ADMISSIONS (Changes based on status) */}
-        <div className={styles.card}>
-          <ClipboardDocumentCheckIcon className={styles.icon} />
-          <h3>Admission Status</h3>
-          
-          {applicationStatus === 'pending' && (
-            <>
-              <p>You have not started your application yet.</p>
-              <Link href="/apply/step-1" className={styles.actionButton}>
-                Begin Application
+      <main className={styles.content}>
+        <header className={styles.welcomeHeader}>
+          <h1>Applicant Dashboard</h1>
+          <p>Manage your admission process and academic records here.</p>
+        </header>
+
+        <div className={styles.grid}>
+          {/* 1. Admission Card - DYNAMIC */}
+          <div className={styles.card}>
+            <h3>Admission & Application</h3>
+            <p>Track your current application progress.</p>
+            
+            <div className={styles.actionArea}>
+              {userStatus === 'pending' && (
+                <>
+                  <p className={styles.infoText}>You haven&apos;t started your application yet.</p>
+                  <Link href="/apply/step-1" className={styles.primaryBtn}>
+                    Begin Application
+                  </Link>
+                </>
+              )}
+
+              {userStatus === 'submitted' && (
+                <div className={styles.alertBox}>
+                  <p>Your application is currently <strong>Under Review</strong>. Check back later for updates.</p>
+                </div>
+              )}
+
+              {userStatus === 'admitted' && (
+                <div className={styles.successBox}>
+                  <p>Congratulations! You have been offered admission.</p>
+                  <Link href="/admission/letter" className={styles.secondaryBtn}>
+                    Download Admission Letter
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Academics Card - LOCKED UNTIL ADMITTED */}
+          <div className={`${styles.card} ${userStatus !== 'admitted' ? styles.locked : ''}`}>
+            <h3>Academic Records</h3>
+            <p>Register courses and check results.</p>
+            {userStatus === 'admitted' ? (
+              <Link href="/academics/registration" className={styles.primaryBtn}>
+                Register Courses
               </Link>
-            </>
-          )}
+            ) : (
+              <p className={styles.lockText}>🔒 Available after admission</p>
+            )}
+          </div>
 
-          {applicationStatus === 'submitted' && (
-            <div className={styles.statusBadge}>
-              <p>Application Submitted. Please check back later for admission status.</p>
-            </div>
-          )}
-
-          {applicationStatus === 'admitted' && (
-            <div className={styles.successBadge}>
-              <p>Congratulations! You have been offered admission.</p>
-              <Link href="/admission-letter" className={styles.link}>Download Letter</Link>
-            </div>
-          )}
+          {/* 3. Payments Card */}
+          <div className={styles.card}>
+            <h3>Payments & Finance</h3>
+            <p>View your transaction history and pay fees.</p>
+            <Link href="/dashboard/payments" className={styles.outlineBtn}>
+              View Receipts
+            </Link>
+          </div>
         </div>
-
-        {/* SECTION 2: ACADEMICS (Only active if Admitted) */}
-        <div className={`${styles.card} ${applicationStatus !== 'admitted' ? styles.disabled : ''}`}>
-          <AcademicCapIcon className={styles.icon} />
-          <h3>Academics</h3>
-          <p>Course registration, Timetables, and Result checking.</p>
-          {applicationStatus === 'admitted' ? (
-            <Link href="/academics/register" className={styles.actionButton}>Register Courses</Link>
-          ) : (
-            <span className={styles.lockedText}>Locked until Admission</span>
-          )}
-        </div>
-
-        {/* SECTION 3: PAYMENTS */}
-        <div className={styles.card}>
-          <CreditCardIcon className={styles.icon} />
-          <h3>Finance</h3>
-          <p>Pay application fees, tuition, and view receipts.</p>
-          <Link href="/finance/history" className={styles.actionButton}>View Payments</Link>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
