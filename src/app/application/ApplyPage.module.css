@@ -1,0 +1,90 @@
+.page {
+  min-height: 100vh;
+ font-family: "Segoe UI", Arial, sans-serif;
+}
+
+
+
+/* Main Content */
+.container {
+  max-width: 900px;
+  background-color: #ffffff;
+  margin: 40px auto;
+  padding: 40px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 26px;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  margin-bottom: 8px;
+  font-weight: 600;
+    color: #222;
+ 
+}
+
+.sectionParagraph {
+    color: #333;
+    font-size: 17px;
+}
+
+.list {
+  padding-left: 20px;
+  margin-top: 12px;
+}
+
+.list li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #222;
+}
+
+/* Button */
+.applyButton {
+  margin-top: 24px;
+  background-color: #011827;
+  color: #f8f4f4;
+  border: none;
+  padding: 14px 36px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.applyButton:hover {
+  background-color: #e0ae1e;
+}
+
+/* Links */
+.link {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px;
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+}

@@ -110,7 +110,7 @@ export default function SignInPage() {
 
         <p className={styles.link}>
           Don&apos;t have an account?{' '}
-          <Link href="/auth/create-account">
+          <Link href="/create-account">
             Create Account
           </Link>
         </p>
