@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 .grid {
@@ -10,14 +13,6 @@
   gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .spanFull {
-    grid-column: span 2;
-  }
-}
 
 .inputGroup {
   display: flex;
@@ -75,7 +70,7 @@
 
 .fileInput {
   display: block;
-  width: 100%;
+  width: 50%;
   font-size: 0.875rem;
   color: #64748b;
   cursor: pointer;

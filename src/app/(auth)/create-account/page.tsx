@@ -38,7 +38,7 @@ export default function CreateAccountPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await fetch('/api/auth/create-account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,7 +54,7 @@ export default function CreateAccountPage() {
       if (res.ok) {
         toast.success('Account created! Please verify your email.');
         // Redirect to Sign In so they can log in after verification
-        setTimeout(() => router.push('/auth/sign-in'), 2000);
+        setTimeout(() => router.push('/sign-in'), 2000);
       } else {
         toast.error(data.error || 'Account creation failed');
       }
@@ -118,7 +118,7 @@ export default function CreateAccountPage() {
 
         <p className={styles.link}>
           Already have an account?{' '}
-          <Link href="/auth/sign-in">Sign In</Link>
+          <Link href="/sign-in">Sign In</Link>
         </p>
       </form>
 

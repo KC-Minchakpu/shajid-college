@@ -1,7 +1,7 @@
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
-  pages: { signIn: "/login", },
+  pages: { signIn: "/sign-in", },
 });
 
 // This tells the middleware to only run on the portal/apply pages
