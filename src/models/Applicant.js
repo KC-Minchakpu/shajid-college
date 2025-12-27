@@ -1,60 +1,69 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, model, models } from 'mongoose';
 
-const SubjectResultSchema = new mongoose.Schema({
+// 1. Sub-schema for O-Level Subject Results
+const SubjectResultSchema = new Schema({
   subject: { type: String, required: true },
   grade: { type: String, required: true },
 });
 
-const ExamSittingSchema = new mongoose.Schema({
+// 2. Sub-schema for Examination Sittings (Step 4)
+const ExamSittingSchema = new Schema({
   examType: { type: String, required: true },
   examYear: { type: String, required: true },
   examNumber: { type: String, required: true },
   subjects: [SubjectResultSchema],
 });
 
-const ApplicantSchema = new mongoose.Schema(
+// 3. Main Applicant Schema
+const ApplicantSchema = new Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
       unique: true,
     },
+    // Unique identifier for the application (e.g., SON/2025/1234)
+    applicationId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows nulls for drafts but enforces uniqueness for submitted ones
+    },
     personalInfo: {
-      fullName: String,
-      gender: String,
-      email: String,
-      phone: String,
-      passportUrl: String,
-      contactAddress: String,
-      dateOfBirth: String,
-      parentsName: String,
-      parentsContactAddress: String,
+      fullName: { type: String },
+      gender: { type: String },
+      email: { type: String },
+      phone: { type: String },
+      passportUrl: { type: String },
+      contactAddress: { type: String },
+      dateOfBirth: { type: String },
+      parentsName: { type: String },
+      parentsContactAddress: { type: String },
     },
     healthInfo: {
-      bloodGroup: String,
-      genotype: String,
-      disability: String,
-      chronicIllness: String,
-      emergencyContact: String,
+      bloodGroup: { type: String },
+      genotype: { type: String },
+      disability: { type: String },
+      chronicIllness: { type: String },
+      emergencyContact: { type: String },
     },
     schoolsAttended: {
-      primarySchool: String,
-      secondarySchool: String,
-      otherInstitutions: String,
+      primarySchool: { type: String },
+      secondarySchool: { type: String },
+      otherInstitutions: { type: String },
     },
-    // This stores an array of sittings (1 or 2 sittings)
+    // Array to handle up to 2 sittings
     examResults: [ExamSittingSchema],
     
     programDetails: {
-      program: String,
+      program: { type: String },
       mode: { type: String, enum: ['Full-time', 'Part-time'], default: 'Full-time' },
-      campus: String,
+      campus: { type: String },
     },
     utmeInfo: {
-      jambRegNo: String,
-      jambScore: Number,
-      jambSubjects: [String],
+      jambRegNo: { type: String },
+      jambScore: { type: Number },
+      jambSubjects: [{ type: String }],
     },
     submitted: {
       type: Boolean,
@@ -66,10 +75,12 @@ const ApplicantSchema = new mongoose.Schema(
       default: 'Pending',
     }
   },
-  { timestamps: true }
+  { 
+    timestamps: true // Automatically adds createdAt and updatedAt
+  }
 );
 
-// Prevent re-compilation of model if it already exists
-const Applicant = mongoose.models.Applicant || mongoose.model('Applicant', ApplicantSchema);
+// Prevent re-compilation of model during Next.js Hot Module Replacement (HMR)
+const Applicant = models.Applicant || model('Applicant', ApplicantSchema);
 
 export default Applicant;

@@ -1,0 +1,140 @@
+.formCard {
+  max-width: 850px;
+  margin: 0 auto;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f6;
+}
+
+.header {
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0D3B66;
+}
+
+.sittingSection {
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin-bottom: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.sittingTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .metaGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.inputField {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  padding: 0.6rem;
+  border-radius: 0.4rem;
+  outline: none;
+}
+
+.inputField:focus {
+  border-color: #0D3B66;
+  ring: 2px #0D3B66;
+}
+
+.subjectRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.subjectSelect {
+  flex: 2;
+}
+
+.gradeSelect {
+  flex: 1;
+}
+
+.addBtn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.nextBtn {
+  background: #0D3B66;
+  color: white;
+  padding: 0.75rem 2.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.toggleSittingBtn {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f0fdf4;
+  border: 2px dashed #bbf7d0;
+  color: #16a34a;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: all 0.2s;
+}
+
+.toggleSittingBtn:hover {
+  background-color: #dcfce7;
+}
+
+.sittingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.removeSittingBtn {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}

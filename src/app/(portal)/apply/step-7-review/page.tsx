@@ -4,19 +4,16 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFormContext } from '@/context/MultiStepContext';
-import { generateStyledPDF } from '@/utils/generateStyledPDF';
-import download from 'downloadjs';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import styles from './step7.module.css';
 
 export default function Step7Review() {
   const { data: session } = useSession();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
-  const [previewing, setPreviewing] = useState(false);
   const { formData } = useFormContext();
 
-  // --- 1. RESTRUCTURE DATA ---
   const nestedData = {
     personalInfo: {
       fullName: formData.fullName || '',
@@ -55,7 +52,6 @@ export default function Step7Review() {
     },
   };
 
-  // --- 2. SUBMISSION LOGIC (DEV MODE) ---
   const handleFinalSubmit = async () => {
     if (!formData) return toast.error('No data to submit');
     setSubmitting(true);
@@ -84,35 +80,25 @@ export default function Step7Review() {
     }
   };
 
-  const handleDownloadPDF = async () => {
-    setPreviewing(true);
-    try {
-      const pdfBytes = await generateStyledPDF(formData);
-      download(pdfBytes, `application_review.pdf`, 'application/pdf');
-    } finally {
-      setPreviewing(false);
-    }
-  };
-
   const ReviewRow = ({ label, value }: { label: string; value: any }) => (
-    <div className="flex justify-between py-2 border-b border-gray-100 text-sm">
-      <span className="text-gray-500 font-medium">{label}</span>
-      <span className="text-gray-900 font-semibold">{value || 'N/A'}</span>
+    <div className={styles.reviewRow}>
+      <span className={styles.rowLabel}>{label}</span>
+      <span className={styles.rowValue}>{value || 'N/A'}</span>
     </div>
   );
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-8 bg-white shadow-2xl rounded-3xl border border-gray-50">
-      <div className="text-center space-y-2 border-b pb-8">
-        <h2 className="text-4xl font-black text-gray-900">Application Review</h2>
-        <p className="text-gray-500">Double-check your passport and info before final submission.</p>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h2>Application Review</h2>
+        <p>Double-check your passport and info before final submission.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className={styles.mainGrid}>
         
-        {/* LEFT COLUMN: PASSPORT PREVIEW */}
-        <div className="lg:col-span-1 flex flex-col items-center space-y-4">
-          <div className="relative w-48 h-60 border-8 border-white shadow-2xl rounded-2xl overflow-hidden bg-gray-100">
+        {/* LEFT COLUMN: PASSPORT */}
+        <div className={styles.passportSection}>
+          <div className={styles.passportFrame}>
             {formData.passportPreview ? (
               <Image 
                 src={formData.passportPreview} 
@@ -122,64 +108,56 @@ export default function Step7Review() {
                 unoptimized
               />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400 text-xs text-center p-4">
+              <div className="flex items-center justify-center h-full text-center p-4 text-gray-400 text-xs">
                 No Passport Uploaded
               </div>
             )}
           </div>
-          <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Official Passport</p>
+          <p className={styles.passportLabel}>Official Passport</p>
         </div>
 
         {/* RIGHT COLUMN: DATA SUMMARY */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <section className="space-y-4">
-            <h3 className="text-lg font-bold text-blue-800 border-b-2 border-blue-100 pb-1">Personal Details</h3>
-            <div className="space-y-1">
-              <ReviewRow label="Name" value={formData.fullName} />
-              <ReviewRow label="Email" value={formData.email} />
-              <ReviewRow label="Phone" value={formData.phone} />
-              <ReviewRow label="Gender" value={formData.gender} />
-            </div>
+        <div className={styles.dataGrid}>
+          <section className={styles.section}>
+            <h3>Personal Details</h3>
+            <ReviewRow label="Name" value={formData.fullName} />
+            <ReviewRow label="Email" value={formData.email} />
+            <ReviewRow label="Phone" value={formData.phone} />
+            <ReviewRow label="Gender" value={formData.gender} />
           </section>
 
-          <section className="space-y-4">
-            <h3 className="text-lg font-bold text-blue-800 border-b-2 border-blue-100 pb-1">Program Details</h3>
-            <div className="space-y-1">
-              <ReviewRow label="Course" value={formData.program} />
-              <ReviewRow label="Mode" value={formData.mode} />
-              <ReviewRow label="Campus" value={formData.campus} />
-            </div>
+          <section className={styles.section}>
+            <h3>Program Details</h3>
+            <ReviewRow label="Course" value={formData.program} />
+            <ReviewRow label="Mode" value={formData.mode} />
+            <ReviewRow label="Campus" value={formData.campus} />
           </section>
 
-          <section className="space-y-4">
-            <h3 className="text-lg font-bold text-blue-800 border-b-2 border-blue-100 pb-1">UTME Info</h3>
-            <div className="space-y-1">
-              <ReviewRow label="Reg No" value={formData.jambRegNo} />
-              <ReviewRow label="Score" value={formData.jambScore} />
-            </div>
+          <section className={styles.section}>
+            <h3>UTME Info</h3>
+            <ReviewRow label="Reg No" value={formData.jambRegNo} />
+            <ReviewRow label="Score" value={formData.jambScore} />
           </section>
 
-          <section className="space-y-4">
-            <h3 className="text-lg font-bold text-blue-800 border-b-2 border-blue-100 pb-1">Medical Info</h3>
-            <div className="space-y-1">
-              <ReviewRow label="Genotype" value={formData.genotype} />
-              <ReviewRow label="Blood Group" value={formData.bloodGroup} />
-            </div>
+          <section className={styles.section}>
+            <h3>Medical Info</h3>
+            <ReviewRow label="Genotype" value={formData.genotype} />
+            <ReviewRow label="Blood Group" value={formData.bloodGroup} />
           </section>
         </div>
       </div>
 
-      <div className="pt-10 flex flex-col sm:flex-row gap-4">
+      <div className={styles.footer}>
         <button
           onClick={() => router.back()}
-          className="flex-1 px-8 py-4 border-2 border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all"
+          className={styles.backBtn}
         >
           Back to Edit
         </button>
         <button
           onClick={handleFinalSubmit}
           disabled={submitting}
-          className="flex-[2] px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-xl hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all disabled:bg-gray-400"
+          className={styles.submitBtn}
         >
           {submitting ? 'Submitting...' : 'Confirm & Submit Application'}
         </button>

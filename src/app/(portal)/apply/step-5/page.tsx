@@ -8,8 +8,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import styles from './step5.module.css';
 
-// 1. Validation Schema
 const schema = z.object({
   program: z.string().min(1, 'Select your preferred program'),
   mode: z.string().min(1, 'Choose full-time or part-time'),
@@ -18,7 +18,6 @@ const schema = z.object({
 
 type ProgramInputs = z.infer<typeof schema>;
 
-// Expanded Course List
 const programs = [
   'General Nursing',
   'Basic Nursing',
@@ -41,11 +40,7 @@ export default function Step5ProgramDetails() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ProgramInputs>({
+  const { register, handleSubmit, formState: { errors } } = useForm<ProgramInputs>({
     resolver: zodResolver(schema),
     defaultValues: {
       program: formData.program || '',
@@ -57,10 +52,8 @@ export default function Step5ProgramDetails() {
   const onSubmit = async (formValues: ProgramInputs) => {
     setIsSaving(true);
     try {
-      // ✅ Update central context
       updatePersonalInfo(formValues);
 
-      // ✅ Save to API
       const response = await fetch('/api/apply/step-5', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +66,7 @@ export default function Step5ProgramDetails() {
       if (!response.ok) throw new Error("Failed to save program details");
 
       toast.success("Program selection saved!");
-      router.push('/apply/step-6-utme'); // Next step
+      router.push('/apply/step-6-utme');
     } catch (error) {
       toast.error("An error occurred while saving.");
     } finally {
@@ -81,65 +74,50 @@ export default function Step5ProgramDetails() {
     }
   };
 
-  const inputClass = "w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white";
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl mx-auto space-y-6 bg-white p-8 rounded-xl shadow-md border border-gray-100">
-      <div className="border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Step 5: Program Selection</h2>
-        <p className="text-sm text-gray-500">Choose your desired course of study and campus.</p>
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.formCard}>
+      <div className={styles.header}>
+        <h2>Step 5: Program Selection</h2>
+        <p>Choose your desired course of study and campus location.</p>
       </div>
 
-      <div className="space-y-4">
-        {/* Program Choice */}
-        <div>
-          <label className="text-sm font-semibold mb-1 block text-gray-700">Program of Choice</label>
-          <select {...register('program')} className={inputClass}>
+      <div className={styles.formGroup}>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Program of Choice</label>
+          <select {...register('program')} className={styles.inputField}>
             <option value="">Select a program</option>
             {programs.map((p) => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          {errors.program && <p className="text-red-500 text-xs mt-1">{errors.program.message}</p>}
+          {errors.program && <p className={styles.errorText}>{errors.program.message}</p>}
         </div>
 
-        {/* Mode of Study */}
-        <div>
-          <label className="text-sm font-semibold mb-1 block text-gray-700">Mode of Study</label>
-          <select {...register('mode')} className={inputClass}>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Mode of Study</label>
+          <select {...register('mode')} className={styles.inputField}>
             <option value="">Select mode</option>
             <option value="Full-time">Full-time</option>
             <option value="Part-time">Part-time</option>
           </select>
-          {errors.mode && <p className="text-red-500 text-xs mt-1">{errors.mode.message}</p>}
+          {errors.mode && <p className={styles.errorText}>{errors.mode.message}</p>}
         </div>
 
-        {/* Campus Choice */}
-        <div>
-          <label className="text-sm font-semibold mb-1 block text-gray-700">Preferred Campus</label>
-          <select {...register('campus')} className={inputClass}>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>Preferred Campus</label>
+          <select {...register('campus')} className={styles.inputField}>
             <option value="">Select campus</option>
             {campuses.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          {errors.campus && <p className="text-red-500 text-xs mt-1">{errors.campus.message}</p>}
+          {errors.campus && <p className={styles.errorText}>{errors.campus.message}</p>}
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-6">
-        <button 
-          type="button" 
-          onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-800 font-medium px-4 py-2"
-        >
-          Back
-        </button>
-        <button 
-          type="submit" 
-          disabled={isSaving}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-3 rounded-lg shadow-md transition-all disabled:bg-gray-400"
-        >
+      <div className={styles.footer}>
+        <button type="button" onClick={() => router.back()} className={styles.backBtn}>Back</button>
+        <button type="submit" disabled={isSaving} className={styles.nextBtn}>
           {isSaving ? 'Saving...' : 'Next: UTME Details'}
         </button>
       </div>
