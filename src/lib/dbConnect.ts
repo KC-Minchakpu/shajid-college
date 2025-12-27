@@ -1,4 +1,3 @@
-// src/lib/mongodb.js
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -12,13 +11,13 @@ if (!MONGODB_URI) {
  * in development. This prevents connections from growing exponentially
  * during API Route usage.
  */
-let cached = global.mongoose;
+let cached = (global as any).mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
-export async function connectToDB() {
+async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
   }
@@ -28,12 +27,11 @@ export async function connectToDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log("=> Connected to MongoDB");
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
       return mongoose;
     });
   }
-  
+
   try {
     cached.conn = await cached.promise;
   } catch (e) {
@@ -43,3 +41,5 @@ export async function connectToDB() {
 
   return cached.conn;
 }
+
+export default dbConnect;

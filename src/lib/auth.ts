@@ -1,10 +1,13 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-// import { db } from "./db"; // If using Prisma or a database
+import dbConnect from "@/lib/dbConnect"; 
+import User from "@/models/User";       
+import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: "jwt", // JSON Web Tokens are best for this setup
+    strategy: "jwt",
   },
   providers: [
     CredentialsProvider({
@@ -14,24 +17,37 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // 1. Check if email/password exists
-        if (!credentials?.email || !credentials?.password) return null;
-
-        // 2. FIND USER IN YOUR DATABASE
-        // const user = await db.user.findUnique({ where: { email: credentials.email } });
-        
-        // DUMMY USER for testing (Replace this with real DB logic)
-        const user = { id: "1", email: "test@nursing.com", password: "password123", role: "applicant" };
-
-        if (user && user.password === credentials.password) {
-          return { id: user.id, email: user.email, role: user.role };
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Please enter an email and password");
         }
-        return null;
+
+        await dbConnect();
+
+        // 1. Find user in MongoDB
+        const user = await User.findOne({ email: credentials.email });
+
+        if (!user) {
+          throw new Error("No user found with this email");
+        }
+
+        // 2. Compare hashed password
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+
+        if (!isValid) {
+          throw new Error("Incorrect password");
+        }
+
+        // 3. Return user data (this goes to the JWT callback)
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role || 'applicant',
+        };
       }
     })
   ],
   callbacks: {
-    // Add the user's role to the session so the frontend can see it
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
@@ -48,6 +64,6 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: "/login", // Points to custom login page
+    signIn: "/auth/sign-in",
   }
 };
