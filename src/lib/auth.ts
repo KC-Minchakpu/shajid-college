@@ -23,26 +23,25 @@ export const authOptions: NextAuthOptions = {
 
         await dbConnect();
 
-        // 1. Find user in MongoDB
         const user = await User.findOne({ email: credentials.email });
 
         if (!user) {
           throw new Error("No user found with this email");
         }
 
-        // 2. Compare hashed password
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
           throw new Error("Incorrect password");
         }
 
-        // 3. Return user data (this goes to the JWT callback)
+        // ✅ Updated: Pull status from DB (default to 'pending' if not found)
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
           role: user.role || 'applicant',
+          status: user.status || 'pending', 
         };
       }
     })
@@ -51,6 +50,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
+        token.status = (user as any).status; 
         token.id = user.id;
       }
       return token;
@@ -58,6 +58,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).role = token.role;
+        (session.user as any).status = token.status; 
         (session.user as any).id = token.id;
       }
       return session;

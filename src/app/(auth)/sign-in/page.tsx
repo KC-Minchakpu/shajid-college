@@ -1,6 +1,7 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
+// 1. Added getSession to the imports
+import { signIn, getSession } from 'next-auth/react';
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -30,12 +31,15 @@ export default function SignInPage() {
       });
 
       if (res?.ok) {
-        const sessionRes = await fetch('/api/auth/session');
-        const session = await sessionRes.json();
+        // 2. Use getSession() instead of fetch('/api/auth/session')
+        const session = await getSession();
+        
+        // Use optional chaining to safely check the role
         const userRole = session?.user?.role;
 
         if (userRole === 'applicant') {
           toast.success('Signed in successfully');
+          // Redirect to Step 1
           setTimeout(() => router.push('/apply/step-1'), 1000);
         } else {
           setLoading(false);
@@ -54,6 +58,7 @@ export default function SignInPage() {
       }
     } catch (error) {
       setLoading(false);
+      console.error("Login Error:", error);
       toast.error('An unexpected error occurred');
     }
   };
